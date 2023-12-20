@@ -6,23 +6,24 @@
 /*   By: mprofett <mprofett@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:17:59 by mprofett          #+#    #+#             */
-/*   Updated: 2023/12/19 15:30:49 by mprofett         ###   ########.fr       */
+/*   Updated: 2023/12/20 15:09:38 by mprofett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "PmergeMe.hpp"
-#include <unistd.h>
 
-int	main(void)
+int	main(int argc, char **argv)
 {
-	struct timespec	begin;
-	struct timespec	end;
-	double			result;
+	try
+	{
+		PmergeMe	a(argv);
 
-	clock_gettime(CLOCK_REALTIME, &begin);
-	usleep(300);
-	clock_gettime(CLOCK_REALTIME, &end);
-	result = end.tv_sec - begin.tv_sec  + (end.tv_nsec - begin.tv_nsec) * 1e-9;
-	std::cout << result << std::endl;
+		a.execute();
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	(void) argc;
 	return (0);
 }

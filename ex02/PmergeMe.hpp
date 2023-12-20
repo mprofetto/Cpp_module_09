@@ -6,7 +6,7 @@
 /*   By: mprofett <mprofett@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:18:27 by mprofett          #+#    #+#             */
-/*   Updated: 2023/12/19 16:38:14 by mprofett         ###   ########.fr       */
+/*   Updated: 2023/12/20 17:33:06 by mprofett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,22 +15,33 @@
 
 # include <exception>
 # include <iostream>
+# include <iomanip>
+# include <iterator>
 # include <string>
 # include <ctime>
 # include <list>
-# include <set>
+# include <vector>
 
-class APmergeMe
+class PmergeMe
 {
-	protected:
-		struct timespec	_starting_time;
-		struct timespec	_ending_time;
-		bool			_executed;
-		double			_last_execution_time;
-		size_t			_size;
+	private:
+		std::string					_sequence;
+		struct timespec				_starting_time;
+		struct timespec				_ending_time;
+		double						_list_execution_time;
+		double						_vector_execution_time;
+		std::list<unsigned int>		_list;
+		std::vector<unsigned int>	_vector;
 
-		APmergeMe();
+		PmergeMe();
 		double			get_elapsed_time(void) const;
+		void			fill_list(void);
+		void			fill_vector(void);
+		void			sort_list(void);
+		void			merge_lists(std::list<unsigned int> &result, std::list<unsigned int> &pending);
+		void			sort_vector(void);
+		void			merge_vector(std::vector<unsigned int> &result, std::vector<unsigned int> &pending);
+		void			print_list(void);
 
 	public:
 		class WrongInputException : public std::exception
@@ -38,47 +49,12 @@ class APmergeMe
 			virtual const char	*what(void) const throw();
 		};
 
-		~APmergeMe();
-		APmergeMe(const APmergeMe &copy);
-		APmergeMe		&operator=(const APmergeMe &copy);
-		virtual void	parse_argument(std::string input) = 0;
-		virtual void	sort(void) = 0;
-		virtual void	display_sequence(void) const = 0;
-		virtual void	display_processing_time(void) const = 0;
+		~PmergeMe();
+		PmergeMe(char **argv);
+		PmergeMe(const PmergeMe &copy);
+		PmergeMe		&operator=(const PmergeMe &copy);
+		void			execute(void);
 };
 
-class ListMerge : public APmergeMe
-{
-	private:
-		std::list<unsigned int>	_sequence;
-		ListMerge();
-
-	public:
-		~ListMerge();
-		ListMerge(const ListMerge &copy);
-		ListMerge(std::string input);
-		ListMerge	&operator=(const ListMerge &copy);
-		virtual void	parse_argument(std::string input);
-		virtual void	sort(void);
-		virtual void	display_sequence(void) const;
-		virtual void	display_processing_time(void) const;
-};
-
-class SetMerge : public APmergeMe
-{
-	private:
-		std::set<unsigned int>	_sequence;
-		SetMerge();
-
-	public:
-		~SetMerge();
-		SetMerge(const SetMerge &copy);
-		SetMerge(std::string input);
-		SetMerge	&operator=(const SetMerge &copy);
-		virtual void	parse_argument(std::string input);
-		virtual void	sort(void);
-		virtual void	display_sequence(void) const;
-		virtual void	display_processing_time(void) const;
-};
 
 #endif
