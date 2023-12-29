@@ -6,7 +6,7 @@
 /*   By: mprofett <mprofett@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 12:18:59 by mprofett          #+#    #+#             */
-/*   Updated: 2023/12/20 18:47:45 by mprofett         ###   ########.fr       */
+/*   Updated: 2023/12/29 10:06:39 by mprofett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,11 @@
 const char	*PmergeMe::WrongInputException::what(void) const throw()
 {
 	return ("Bad input given");
+}
+
+const char	*PmergeMe::DuplicateException::what(void) const throw()
+{
+	return ("There is some duplicate in integers sequence");
 }
 
 bool	is_zero(std::string input)
@@ -29,20 +34,6 @@ bool	is_zero(std::string input)
 		++it;
 	}
 	return (true);
-}
-
-void	get_min_max(unsigned int *a, unsigned int *b, unsigned int *min, unsigned int *max)
-{
-	if (*a > *b)
-	{
-		*max = *a;
-		*min = *b;
-	}
-	else
-	{
-		*min = *a;
-		*max = *b;
-	}
 }
 
 PmergeMe::PmergeMe()
@@ -104,81 +95,12 @@ double			PmergeMe::get_elapsed_time(void) const
 		+ (this->_ending_time.tv_nsec - this->_starting_time.tv_nsec) * 1e-9);
 }
 
-void	PmergeMe::fill_list(void)
-{
-	unsigned int	nbr;
-	size_t			start;
-	size_t			end;
-	std::string		nbr_to_convert;
-
-	if (this->_sequence.find_first_not_of(" 0123456789", 0) != std::string::npos)
-		throw WrongInputException();
-	start = 0;
-	while (start != std::string::npos)
-	{
-		start = this->_sequence.find_first_of("0123456789", start);
-		if (start != std::string::npos)
-		{
-			end = this->_sequence.find_first_of(" ", start);
-			if (end == std::string::npos)
-				end = this->_sequence.size() - 1;
-			nbr_to_convert = this->_sequence.substr(start, end - start + 1);
-			nbr = strtol(nbr_to_convert.c_str(), NULL, 10);
-			if (nbr == 0 && is_zero(nbr_to_convert) == false)
-				throw WrongInputException();
-			this->_list.push_back(nbr);
-			start = end + 1;
-		}
-	}
-}
-
-void	PmergeMe::fill_vector(void)
-{
-	unsigned int	nbr;
-	size_t			start;
-	size_t			end;
-	std::string		nbr_to_convert;
-
-	if (this->_sequence.find_first_not_of(" 0123456789", 0) != std::string::npos)
-		throw WrongInputException();
-	start = 0;
-	while (start != std::string::npos)
-	{
-		start = this->_sequence.find_first_of("0123456789", start);
-		if (start != std::string::npos)
-		{
-			end = this->_sequence.find_first_of(" ", start);
-			if (end == std::string::npos)
-				end = this->_sequence.size() - 1;
-			nbr_to_convert = this->_sequence.substr(start, end - start + 1);
-			nbr = strtol(nbr_to_convert.c_str(), NULL, 10);
-			if (nbr == 0 && is_zero(nbr_to_convert) == false)
-				throw WrongInputException();
-			this->_vector.push_back(nbr);
-			start = end + 1;
-		}
-	}
-}
-
-void			debug_list(std::list<unsigned int> list)
-{
-	std::list<unsigned int>::iterator	it;
-
-	it = list.begin();
-	while (it != list.end())
-	{
-		std::cout << " " << *it;
-		++it;
-	}
-	std::cout << std::endl;
-}
-
-void			debug_vector(std::vector<unsigned int> list)
+void		PmergeMe::print_vector(void)
 {
 	std::vector<unsigned int>::iterator	it;
 
-	it = list.begin();
-	while (it != list.end())
+	it = this->_vector.begin();
+	while (it != this->_vector.end())
 	{
 		std::cout << " " << *it;
 		++it;
@@ -199,190 +121,195 @@ void			PmergeMe::print_list(void)
 	std::cout << std::endl;
 }
 
-std::list<unsigned int>::iterator	get_insertion_pos(std::list<unsigned int>::iterator it, std::list<unsigned int>::iterator end, unsigned int *nbr)
-{
-	while (it != end)
-	{
-		if (*it > *nbr)
-			return (it);
-		else if (*it == *nbr)
-			throw PmergeMe::WrongInputException();
-		else
-			++it;
-	}
-	return (--it);
-}
 
-void			PmergeMe::merge_lists(std::list<unsigned int> &result, std::list<unsigned int> &pending)
+void			PmergeMe::fill_unsorted_list(void)
 {
-	std::list<unsigned int>::iterator	it;
+	unsigned int				nbr;
+	size_t						start;
+	size_t						end;
+	std::string					nbr_to_convert;
+	std::list<unsigned int>		new_elem;
 
-	it = result.begin();
-	while (pending.empty() == false)
+	if (this->_sequence.find_first_not_of(" 0123456789", 0) != std::string::npos)
+		throw WrongInputException();
+	start = 0;
+	while (start != std::string::npos)
 	{
-		if (*it < pending.front())
-			++it;
-		else
+		start = this->_sequence.find_first_of("0123456789", start);
+		if (start != std::string::npos)
 		{
-			result.insert(it, pending.front());
-			pending.pop_front();
+			end = this->_sequence.find_first_of(" ", start);
+			if (end == std::string::npos)
+				end = this->_sequence.size() - 1;
+			nbr_to_convert = this->_sequence.substr(start, end - start + 1);
+			nbr = strtol(nbr_to_convert.c_str(), NULL, 10);
+			if (nbr == 0 && is_zero(nbr_to_convert) == false)
+				throw WrongInputException();
+			new_elem.push_back(nbr);
+			this->_unsorted_list.push_back(new_elem);
+			new_elem.clear();
+			start = end + 1;
 		}
 	}
-	this->_list = result;
+	if (this->_unsorted_list.size() == 0)
+		throw WrongInputException();
 }
 
-void			PmergeMe::sort_list(void)
+void	PmergeMe::fill_unsorted_vector(void)
 {
-	bool					list_is_even;
-	unsigned int			straggler;
-	unsigned int			min;
-	unsigned int			max;
-	std::list<unsigned int>	result;
-	std::list<unsigned int>	pending;
+	unsigned int				nbr;
+	size_t						start;
+	size_t						end;
+	std::string					nbr_to_convert;
+	std::vector<unsigned int>	new_elem;
 
-	if (this->_list.size () % 2 != 0)
+	if (this->_sequence.find_first_not_of(" 0123456789", 0) != std::string::npos)
+		throw WrongInputException();
+	start = 0;
+	while (start != std::string::npos)
 	{
-		straggler = this->_list.back();
-		this->_list.pop_back();
-		list_is_even = false;
-	}
-	else
-		list_is_even = true;
-	while(this->_list.empty() == false)
-	{
-		if (this->_list.back() == this->_list.front())
-			throw WrongInputException();
-		get_min_max(&this->_list.back(), &this->_list.front(), &min, &max);
-		if (result.empty())
+		start = this->_sequence.find_first_of("0123456789", start);
+		if (start != std::string::npos)
 		{
-			result.push_back(max);
-			pending.push_back(min);
+			end = this->_sequence.find_first_of(" ", start);
+			if (end == std::string::npos)
+				end = this->_sequence.size() - 1;
+			nbr_to_convert = this->_sequence.substr(start, end - start + 1);
+			nbr = strtol(nbr_to_convert.c_str(), NULL, 10);
+			if (nbr == 0 && is_zero(nbr_to_convert) == false)
+				throw WrongInputException();
+			new_elem.push_back(nbr);
+			this->_unsorted_vector.push_back(new_elem);
+			new_elem.clear();
+			start = end + 1;
 		}
-		else
-		{
-			result.insert(get_insertion_pos(result.begin(), result.end(), &max), max);
-			pending.insert(get_insertion_pos(pending.begin(), pending.end(), &min), min);
-		}
-		this->_list.pop_back();
-		this->_list.pop_front();
 	}
-	if (pending.empty() == false)
-	{
-		result.insert(result.begin(), pending.front());
-		pending.pop_front();
-	}
-	if (list_is_even == false)
-		result.insert(get_insertion_pos(result.begin(), result.end(), &straggler), straggler);
-	merge_lists(result, pending);
+	if (this->_unsorted_vector.size() == 0)
+		throw WrongInputException();
 }
 
-
-void			PmergeMe::merge_vector(std::vector<unsigned int> &highest, std::vector<unsigned int> &lowest)
+std::vector<unsigned int>			merge_vector(std::vector<unsigned int> &highest, std::vector<unsigned int> &lowest)
 {
 	std::vector<unsigned int>::iterator	highest_it;
 	std::vector<unsigned int>::iterator	lowest_it;
-	std::vector<unsigned int>::iterator	result;
+	std::vector<unsigned int>			ret;
 
 	highest_it = highest.begin();
 	lowest_it = lowest.begin();
-	result = this->_vector.begin();
 	while(!(highest_it == highest.end() && lowest_it == lowest.end()))
 	{
 		if (lowest_it == lowest.end())
 		{
-			this->_vector.insert(result, *highest_it);
+			ret.push_back(*highest_it);
 			++highest_it;
 		}
 		else if (highest_it == highest.end())
 		{
-			this->_vector.insert(result, *lowest_it);
+			ret.push_back(*lowest_it);
 			++lowest_it;
 		}
 		else if (*highest_it < *lowest_it)
 		{
-			this->_vector.insert(result, *highest_it);
+			ret.push_back(*highest_it);
 			++highest_it;
 		}
 		else
 		{
-			this->_vector.insert(result, *lowest_it);
+			ret.push_back(*lowest_it);
 			++lowest_it;
 		}
-		++result;
 	}
-}
-
-std::vector<unsigned int>::iterator	get_vector_insertion_pos(std::vector<unsigned int>::iterator it, std::vector<unsigned int>::iterator end, unsigned int *nbr)
-{
-	while (it != end)
-	{
-		if (*it > *nbr)
-			return (it);
-		else if (*it == *nbr)
-			throw PmergeMe::WrongInputException();
-		else
-			++it;
-	}
-	return (it);
+	return (ret);
 }
 
 void			PmergeMe::sort_vector(void)
 {
-	bool						vector_is_even;
-	unsigned int				straggler;
-	unsigned int				a;
-	unsigned int				b;
-	unsigned int				min;
-	unsigned int				max;
-	std::vector<unsigned int>	result;
-	std::vector<unsigned int>	pending;
+	std::vector<std::vector<unsigned int> >	new_vector;
+	std::vector<unsigned int>				a;
+	std::vector<unsigned int>				b;
+	std::vector<unsigned int>				temp;
 
-	if (this->_vector.size () % 2 != 0)
+	while (this->_unsorted_vector.size() != 1)
 	{
-		straggler = this->_vector.back();
-		this->_vector.pop_back();
-		vector_is_even = false;
-	}
-	else
-		vector_is_even = true;
-	while(this->_vector.empty() == false)
-	{
-		a = this->_vector.back();
-		this->_vector.pop_back();
-		b = this->_vector.back();
-		this->_vector.pop_back();
-		if (a == b)
-			throw WrongInputException();
-		get_min_max(&a, &b, &min, &max);
-		if (result.empty())
+		while (this->_unsorted_vector.empty() == false)
 		{
-			result.push_back(max);
-			pending.push_back(min);
+			a = this->_unsorted_vector.back();
+			this->_unsorted_vector.pop_back();
+			if (this->_unsorted_vector.empty() == false)
+			{
+				b = this->_unsorted_vector.back();
+				this->_unsorted_vector.pop_back();
+				temp = merge_vector(a, b);
+				new_vector.push_back(temp);
+			}
+			else
+			{
+				if (new_vector.empty() == false)
+				{
+					b = new_vector.back();
+					new_vector.pop_back();
+					temp = merge_vector(a, b);
+					new_vector.push_back(temp);
+				}
+				else
+					new_vector.push_back(a);
+			}
 		}
-		else
-		{
-			result.insert(get_vector_insertion_pos(result.begin(), result.end(), &max), max);
-			pending.insert(get_vector_insertion_pos(pending.begin(), pending.end(), &min), min);
-		}
+		this->_unsorted_vector = new_vector;
+		new_vector.clear();
 	}
-	if (vector_is_even == false)
-		result.insert(get_vector_insertion_pos(result.begin(), result.end(), &straggler), straggler);
-	if (pending.empty() == false)
-		merge_vector(result, pending);
-	else
-		this->_vector = result;
+	this->_vector = this->_unsorted_vector.back();
+	this->_unsorted_vector.pop_back();
 }
 
+void			PmergeMe::merge_sort_list(void)
+{
+	std::list<std::list<unsigned int> >	new_list;
+	std::list<unsigned int>				a;
+	std::list<unsigned int>				b;
+
+	while (this->_unsorted_list.size() != 1)
+	{
+		while (this->_unsorted_list.empty() == false)
+		{
+			a = this->_unsorted_list.back();
+			this->_unsorted_list.pop_back();
+			if (this->_unsorted_list.empty() == false)
+			{
+				b = this->_unsorted_list.back();
+				this->_unsorted_list.pop_back();
+				a.merge(b);
+				new_list.push_back(a);
+			}
+			else
+			{
+				if (new_list.empty() == false)
+				{
+					b = new_list.back();
+					new_list.pop_back();
+					a.merge(b);
+					new_list.push_back(a);
+				}
+				else
+					new_list.push_back(a);
+			}
+		}
+		this->_unsorted_list = new_list;
+		new_list.clear();
+	}
+	this->_list = this->_unsorted_list.back();
+	this->_unsorted_list.pop_back();
+}
 
 void			PmergeMe::execute(void)
 {
 	clock_gettime(CLOCK_REALTIME, &this->_starting_time);
-	fill_list();
-	sort_list();
+	fill_unsorted_list();
+	merge_sort_list();
 	clock_gettime(CLOCK_REALTIME, &this->_ending_time);
 	this->_list_execution_time = get_elapsed_time();
 	clock_gettime(CLOCK_REALTIME, &this->_starting_time);
-	fill_vector();
+	fill_unsorted_vector();
 	sort_vector();
 	clock_gettime(CLOCK_REALTIME, &this->_ending_time);
 	this->_vector_execution_time = get_elapsed_time();

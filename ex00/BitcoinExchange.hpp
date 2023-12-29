@@ -6,7 +6,7 @@
 /*   By: mprofett <mprofett@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/12 15:53:47 by mprofett          #+#    #+#             */
-/*   Updated: 2023/12/20 14:32:45 by mprofett         ###   ########.fr       */
+/*   Updated: 2023/12/29 11:32:45 by mprofett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,18 @@ class BitcoinExchange
 		};
 
 		class WrongInputFileFormat : public std::exception
+		{
+			public:
+				virtual const char *what() const throw();
+		};
+
+		class OpeningDatabaseFile : public std::exception
+		{
+			public:
+				virtual const char *what() const throw();
+		};
+
+		class OpeningInputFile : public std::exception
 		{
 			public:
 				virtual const char *what() const throw();

@@ -6,7 +6,7 @@
 /*   By: mprofett <mprofett@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/12 15:54:30 by mprofett          #+#    #+#             */
-/*   Updated: 2023/12/15 16:03:49 by mprofett         ###   ########.fr       */
+/*   Updated: 2023/12/29 11:50:20 by mprofett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,16 @@ const char *BitcoinExchange::WrongDatabaseFileFormat::what() const throw()
 const char *BitcoinExchange::WrongInputFileFormat::what() const throw()
 {
 	return ("Wrong input file formating");
+}
+
+const char *BitcoinExchange::OpeningDatabaseFile::what() const throw()
+{
+	return ("Database file cannot be open");
+}
+
+const char *BitcoinExchange::OpeningInputFile::what() const throw()
+{
+	return ("Input file cannot be open");
 }
 
 /*Constructors*/
@@ -48,8 +58,9 @@ BitcoinExchange::BitcoinExchange(std::string filename)
 	std::pair<std::string, double>			new_elem;
 
 	src.open(filename);
+	if (src.is_open() == false)
+		throw OpeningDatabaseFile();
 	std::getline(src, line);
-
 	if (line.compare("date,exchange_rate\n") == false)
 		throw WrongDatabaseFileFormat();
 	while (src)
@@ -134,21 +145,19 @@ double	BitcoinExchange::getExchangeRate(std::string value)
 	std::string::iterator	it;
 
 	delimiter = value.find_first_of('.');
+	it = value.begin();
+	while (*it != '.' && it != value.end())
+	{
+		if (!isdigit(*it))
+			throw WrongDatabaseFileFormat();
+		++it;
+	}
 	if (delimiter != std::string::npos)
 	{
-		it = value.begin();
-		while (*it != '.')
+		while (++it != value.end())
 		{
 			if (!isdigit(*it))
 				throw WrongDatabaseFileFormat();
-			++it;
-		}
-		++it;
-		while (it != value.end())
-		{
-			if (!isdigit(*it))
-				throw WrongDatabaseFileFormat();
-			++it;
 		}
 	}
 	rate = strtod(const_cast<char *>(value.c_str()), NULL);
@@ -185,27 +194,25 @@ double	handleValue(std::string value, std::string line)
 	std::string::iterator	it;
 
 	delimiter = value.find_first_of('.');
-	if (delimiter != std::string::npos)
+	it = value.begin();
+	while (*it != '.' && it != value.end())
 	{
-		it = value.begin();
-		while (*it != '.')
+		if (!isdigit(*it))
 		{
-			if (!isdigit(*it))
-			{
-				std::cout << "Error: bad input ==> " << line << std::endl;
-				return (-1);
-			}
-			++it;
+			std::cout << "Error: bad input ==> " << line << std::endl;
+			return (-1);
 		}
 		++it;
-		while (it != value.end())
+	}
+	if (delimiter != std::string::npos)
+	{
+		while (++it != value.end())
 		{
 			if (!isdigit(*it))
 			{
 				std::cout << "Error: bad input ==> " << line << std::endl;
 				return (-1);
 			}
-			++it;
 		}
 	}
 	result = strtod(const_cast<char *>(value.c_str()), NULL);
@@ -271,6 +278,8 @@ void		BitcoinExchange::convert_values(std::string filename)
 	std::map<std::string, double>			result;
 
 	src.open(filename);
+	if (src.is_open() == false)
+		throw OpeningInputFile();
 	std::getline(src, line);
 
 	if (line.compare("date | value\n") == false)
