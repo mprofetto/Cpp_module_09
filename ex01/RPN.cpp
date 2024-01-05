@@ -6,7 +6,7 @@
 /*   By: mprofett <mprofett@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/18 10:03:31 by mprofett          #+#    #+#             */
-/*   Updated: 2023/12/19 12:16:41 by mprofett         ###   ########.fr       */
+/*   Updated: 2024/01/03 12:57:48 by mprofett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,8 +96,8 @@ int		RPN::operate(void)
 		throw Error();
 	operand = this->_expression.top();
 	this->_expression.pop();
-	elem1 = get_next_elem();
 	elem2 = get_next_elem();
+	elem1 = get_next_elem();
 	if (operand == '+')
 		result = elem1 + elem2;
 	else if (operand == '-')

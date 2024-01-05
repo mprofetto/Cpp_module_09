@@ -6,7 +6,7 @@
 /*   By: mprofett <mprofett@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/12 15:54:30 by mprofett          #+#    #+#             */
-/*   Updated: 2023/12/29 11:50:20 by mprofett         ###   ########.fr       */
+/*   Updated: 2024/01/03 12:57:28 by mprofett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,7 +237,7 @@ double	BitcoinExchange::getRate(std::string date)
 	if (it != this->_database.end())
 		return (it->second);
 	it = this->_database.lower_bound(date);
-	if (it-- != this->_database.end())
+	if (it != this->_database.begin())
 		return (it->second);
 	else
 		return (0.0);
